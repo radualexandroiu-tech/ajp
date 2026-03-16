@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Agenda Juridică">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Agenda Juridică">
+    <meta name="theme-color" content="#2a5298">
+    <title>Agenda Juridică</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#1e3c72,#2a5298);min-height:100vh;overflow-x:hidden}
+.app-container{max-width:100%;margin:0 auto;background:white;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;padding:16px 14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
+.header h1{font-size:22px;margin-bottom:4px}
+.header-btns{display:flex;gap:6px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.header-btn{padding:6px 10px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:white;font-size:11px;cursor:pointer;font-weight:600}
+.portal-bar{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:8px;font-size:11px;min-height:20px}
+.portal-dot{width:8px;height:8px;border-radius:50%;background:#6c757d;flex-shrink:0}
+.portal-dot.running{background:#ffc107;animation:pdot 1s infinite}
+.portal-dot.ok{background:#28a745}
+.portal-dot.err{background:#dc3545}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:0.3}}
+.search-wrap{margin:10px 8px 0;position:relative}
+.search-inner{display:flex;align-items:center;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.35);border-radius:12px;padding:0 12px}
+.search-inner input{flex:1;padding:9px 8px;border:none;background:transparent;font-size:13px;color:white;outline:none}
+.search-inner input::placeholder{color:rgba(255,255,255,0.6)}
+#searchResults{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:500;max-height:320px;overflow-y:auto;border:1px solid rgba(0,0,0,0.06)}
+.tabs{display:flex;background:#f5f7fa;border-bottom:2px solid #e1e8ed;overflow-x:auto;position:sticky;top:0;z-index:99;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+.tab{flex:1;min-width:80px;padding:14px 8px;text-align:center;cursor:pointer;font-weight:600;color:#5a6c7d;border:none;background:none;font-size:12px;white-space:nowrap;line-height:1.4}
+.tab.active{background:white;color:#2a5298;border-bottom:3px solid #2a5298}
+.content{padding:14px;padding-bottom:80px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;margin-bottom:5px;font-weight:600;color:#2d3748;font-size:13px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#2a5298}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-group small{color:#5a6c7d;font-size:11px;margin-top:3px;display:block}
+.btn{padding:11px 18px;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;transition:opacity 0.2s;display:inline-block}
+.btn:active{opacity:0.8}
+.btn-primary{background:#2a5298;color:white}
+.btn-danger{background:#dc3545;color:white}
+.btn-success{background:#28a745;color:white}
+.btn-teal{background:#17a2b8;color:white}
+.btn-sm{padding:7px 11px;font-size:12px}
+.dosare-grid{display:grid;gap:14px;margin-top:14px}
+.dosar-card{border:2px solid #e2e8f0;border-radius:10px;padding:14px;background:white;box-shadow:0 2px 4px rgba(0,0,0,0.08)}
+.dosar-numar{font-size:16px;font-weight:700;color:#2a5298;margin-bottom:7px}
+.dosar-info{font-size:12px;color:#5a6c7d;margin-bottom:5px;word-wrap:break-word}
+.dosar-info strong{color:#2d3748}
+.dosar-actions{margin-top:11px;display:flex;gap:5px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;margin-right:4px;margin-bottom:4px}
+.badge-civil{background:#e6f7ff;color:#0066cc}
+.badge-penal{background:#ffe6e6;color:#cc0000}
+.badge-contencios{background:#fff4e6;color:#cc7a00}
+.badge-comercial{background:#e6ffe6;color:#00a65a}
+.termen-card{background:white;border-left:5px solid #e91e63;padding:16px;margin-bottom:14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+.termen-data{font-weight:700;color:#e91e63;font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.termen-detalii{font-size:14px;color:#2d3748;line-height:1.7}
+.badge-zile{display:inline-block;padding:6px 12px;border-radius:20px;background:#e91e63;color:white;font-size:11px;font-weight:700;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px}
+.stat-card{color:white;padding:18px 12px;border-radius:12px;text-align:center;box-shadow:0 3px 8px rgba(0,0,0,0.12);cursor:pointer}
+.stat-card:nth-child(1){background:linear-gradient(135deg,#a8b8f0,#c5b3d9)}
+.stat-card:nth-child(2){background:linear-gradient(135deg,#ffd89b,#ffb88c)}
+.stat-card:nth-child(3){background:linear-gradient(135deg,#9fd8f5,#a3e0f7)}
+.stat-card:nth-child(4){background:linear-gradient(135deg,#a8e6c8,#b3f0d9)}
+.stat-number{font-size:30px;font-weight:700;margin-bottom:4px}
+.stat-label{font-size:11px;opacity:0.9}
+.empty-state{text-align:center;padding:40px 20px;color:#5a6c7d}
+.alert{padding:11px 14px;border-radius:8px;margin-bottom:14px;font-size:13px}
+.alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.alert-danger{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.alert-info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb}
+.form-panel{background:#f7fafc;padding:18px;border-radius:10px;margin-bottom:18px}
+.form-panel h3{margin-bottom:14px;color:#2d3748;font-size:15px}
+.fab{position:fixed;bottom:20px;right:20px;width:54px;height:54px;border-radius:50%;background:#2a5298;color:white;border:none;font-size:24px;box-shadow:0 4px 12px rgba(42,82,152,0.4);cursor:pointer;z-index:1000}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-top:14px;width:100%}
+.cal-day{height:56px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 2px;text-align:center;font-size:11px;overflow:hidden;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.cal-day.today{border-color:#2a5298;background:#e6f2ff;font-weight:700}
+.cal-day.has-t{background:#fff4e6}
+.cal-day.has-c{background:linear-gradient(135deg,#e0f7fa,#e8f5e9);border-color:#17a2b8}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.todo-item{background:white;border:2px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:11px}
+.todo-item.completed{opacity:0.55;text-decoration:line-through}
+.pbadge-foarte-urgent{background:#8b0000;color:white;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700}
+.pbadge-urgent{background:#dc3545;color:white;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700}
+.pbadge-urmarit{background:#ffc107;color:#000;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700}
+.pbadge-concediu{background:linear-gradient(135deg,#17a2b8,#28a745);color:white;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700}
+.install-banner{background:#1a1a2e;color:white;padding:10px 14px;display:none;position:sticky;top:0;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,0.4)}
+.install-row{display:flex;align-items:center;gap:10px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
+/* modal overlay */
+.modal-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:12px}
+.modal-box{background:white;border-radius:14px;max-width:580px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25)}
+.modal-hdr{background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;padding:16px 18px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:rgba(255,255,255,0.2);border:none;color:white;font-size:22px;cursor:pointer;width:34px;height:34px;border-radius:50%;line-height:1}
+</style>
+</head>
+<body>
+
+<div id="installBanner" class="install-banner">
+  <div class="install-row">
+    <img src="./icon-192.png" style="width:40px;height:40px;border-radius:9px;flex-shrink:0" alt="">
+    <div style="flex:1"><strong style="display:block;font-size:13px;">Agenda Juridică</strong><span style="font-size:11px;opacity:0.65;">Instalează pe ecranul principal</span></div>
+    <button class="header-btn" onclick="installApp()">Instalează</button>
+    <button onclick="document.getElementById('installBanner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer">×</button>
+  </div>
+</div>
+
+<div class="app-container">
+  <div class="header">
+    <h1>⚖️ Agenda Juridică</h1>
+    <div class="header-btns">
+      <button class="header-btn" onclick="exportData()">💾 Backup</button>
+      <label class="header-btn">📂 Import<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></label>
+      <button class="header-btn" onclick="syncManual()" style="background:rgba(23,162,184,0.5);border-color:rgba(23,162,184,0.8)">🔄 Sync portal</button>
+    </div>
+    <!-- Status sincronizare portal -->
+    <div class="portal-bar">
+      <div class="portal-dot" id="pdot"></div>
+      <span id="ptxt" style="color:rgba(255,255,255,0.7)">Se verifică portalul instanțelor...</span>
+    </div>
+    <!-- Căutare globală -->
+    <div class="search-wrap">
+      <div class="search-inner">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="gSearch" placeholder="Caută dosar, client, număr..."
+          oninput="globalSearch(this.value)"
+          onfocus="this.parentElement.style.border='1.5px solid rgba(255,255,255,0.75)'"
+          onblur="this.parentElement.style.border='1.5px solid rgba(255,255,255,0.35)'">
+        <span onclick="document.getElementById('gSearch').value='';globalSearch('')" style="cursor:pointer;color:rgba(255,255,255,0.6);font-size:16px;padding-left:4px">✕</span>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="goTab('dashboard',this)">📊<br>Panou</button>
+    <button class="tab" onclick="goTab('clienti',this)">👥<br>Clienți</button>
+    <button class="tab" onclick="goTab('dosare',this)">📁<br>Dosare</button>
+    <button class="tab" onclick="goTab('up',this)">🔍<br>UP</button>
+    <button class="tab" onclick="goTab('dosareLucru',this)">⚙️<br>Lucru</button>
+    <button class="tab" onclick="goTab('dosareTerminate',this)">✅<br>Terminate</button>
+    <button class="tab" onclick="goTab('todo',this)">📝<br>To-Do</button>
+    <button class="tab" onclick="goTab('termene',this)">📅<br>Termene</button>
+    <button class="tab" onclick="goTab('calendar',this)">🗓️<br>Cal.<span id="calBadge" style="display:none;background:#e91e63;color:white;border-radius:9px;font-size:9px;padding:1px 4px;margin-left:2px;font-weight:700"></span></button>
+  </div>
+
+  <div class="content">
+    <!-- ── DASHBOARD ───────────────────────────────── -->
+    <div id="dashboard" class="tab-content active">
+      <div class="stats">
+        <div class="stat-card" onclick="goTab('dosare',document.querySelectorAll('.tab')[2])"><div class="stat-number" id="sDosare">0</div><div class="stat-label">📁 Dosare active</div></div>
+        <div class="stat-card" onclick="goTab('dosareLucru',document.querySelectorAll('.tab')[4])"><div class="stat-number" id="sLucru">0</div><div class="stat-label">⚙️ În lucru</div></div>
+        <div class="stat-card" onclick="goTab('termene',document.querySelectorAll('.tab')[7])"><div class="stat-number" id="sTermene">0</div><div class="stat-label">📅 Termene viitoare</div></div>
+        <div class="stat-card" onclick="goTab('todo',document.querySelectorAll('.tab')[6])"><div class="stat-number" id="sTodo">0</div><div class="stat-label">📝 Task-uri</div></div>
+      </div>
+      <h3 style="margin-bottom:12px;color:#2d3748">Task-uri urgente <span id="urgBadge" style="display:none;background:#dc3545;color:white;border-radius:10px;font-size:11px;font-weight:700;padding:2px 8px"></span></h3>
+      <div id="dashTodo"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;margin-bottom:11px">
+        <h3 style="margin:0;color:#2d3748">Termene viitoare</h3>
+        <div style="display:flex;gap:3px;background:#f0f4f8;border-radius:20px;padding:3px">
+          <button onclick="setZile(7)" id="bz7" style="border:none;background:transparent;border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#718096">7 zile</button>
+          <button onclick="setZile(14)" id="bz14" style="border:none;background:#2a5298;border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:white">14 zile</button>
+          <button onclick="setZile(30)" id="bz30" style="border:none;background:transparent;border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#718096">30 zile</button>
+        </div>
+      </div>
+      <div id="dashTermene"></div>
+    </div>
+
+    <!-- ── CLIENȚI ─────────────────────────────────── -->
+    <div id="clienti" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <h2 style="color:#2d3748;font-size:22px;font-weight:700">Clienți</h2>
+        <button class="btn btn-primary btn-sm" onclick="showForm('clientForm')">+ Client</button>
+      </div>
+      <div id="clientForm" style="display:none" class="form-panel">
+        <h3 id="clientFormTitle">Client nou</h3>
+        <form onsubmit="saveClient(event)">
+          <div class="form-group"><label>Nume *</label><input type="text" id="cNume" required placeholder="Nume complet"></div>
+          <div class="form-group"><label>CNP</label><input type="text" id="cCNP" placeholder="CNP" maxlength="13"></div>
+          <div class="form-group"><label>Contact</label><input type="text" id="cContact" placeholder="Telefon / Email"></div>
+          <div class="form-group"><label>Adresă</label><textarea id="cAdresa" placeholder="Adresă"></textarea></div>
+          <div class="form-group"><label>Onorariu plătit (RON)</label><input type="number" id="cPlatit" placeholder="0" min="0" step="0.01"></div>
+          <div class="form-group"><label>Onorariu restant (RON)</label><input type="number" id="cRestant" placeholder="0" min="0" step="0.01"></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvează</button><button type="button" class="btn" onclick="hideForm('clientForm')" style="background:#e9ecef;color:#495057">Anulează</button></div>
+        </form>
+      </div>
+      <input type="text" placeholder="🔍 Caută clienți..." onkeyup="filterList('clientiList',this.value)" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px">
+      <div id="clientiList"></div>
+    </div>
+
+    <!-- ── DOSARE ──────────────────────────────────── -->
+    <div id="dosare" class="tab-content">
+      <div id="dosarForm" style="display:none" class="form-panel">
+        <h3 id="dosarFormTitle">Dosar nou</h3>
+        <form onsubmit="saveDosar(event)">
+          <div class="form-group"><label>Număr dosar *</label><input type="text" id="dNr" required placeholder="ex: 1234/215/2024"></div>
+          <div class="form-group"><label>Instanță *</label><input type="text" id="dInst" required placeholder="Judecătoria Hunedoara"></div>
+          <div class="form-group"><label>Tip dosar *</label>
+            <select id="dTip" required><option value="">Selectează...</option><option value="civil">Civil</option><option value="penal">Penal</option><option value="contencios">Contencios</option><option value="comercial">Comercial</option></select>
+          </div>
+          <div class="form-group"><label>Client</label><input type="text" id="dClient" placeholder="Nume client"></div>
+          <div class="form-group"><label>Obiect</label><textarea id="dObiect" placeholder="Obiectul dosarului"></textarea></div>
+          <div class="form-group"><label>Link portal</label><input type="url" id="dLink" placeholder="https://portal.just.ro/..."></div>
+          <div class="form-group"><label>Stadiu procesual</label>
+            <select id="dStadiu"><option value="Fond">Fond</option><option value="Apel">Apel</option><option value="Recurs">Recurs</option></select>
+          </div>
+          <div class="form-group"><label>Cale de atac</label>
+            <select id="dCale"><option value="Niciuna">Niciuna</option><option value="Apel">Apel</option><option value="Recurs">Recurs</option></select>
+          </div>
+          <div class="form-group"><label>Notițe</label><textarea id="dNotite" placeholder="Notițe generale..."></textarea></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvează</button><button type="button" class="btn" onclick="hideForm('dosarForm')" style="background:#e2e8f0">Anulează</button></div>
+        </form>
+      </div>
+      <input type="text" placeholder="🔍 Caută dosare..." onkeyup="filterList('dosareList',this.value)" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px">
+      <div id="dosareList" class="dosare-grid"></div>
+      <button class="fab" onclick="showForm('dosarForm');document.getElementById('dosarFormTitle').textContent='Dosar nou';editingDosarId=null">+</button>
+    </div>
+
+    <!-- ── URMĂRIRE PENALĂ ─────────────────────────── -->
+    <div id="up" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <h2 style="color:#2d3748;font-size:22px;font-weight:700">Urmărire Penală</h2>
+        <button class="btn btn-primary btn-sm" onclick="showForm('upForm')">+ Dosar UP</button>
+      </div>
+      <div id="upForm" style="display:none" class="form-panel">
+        <h3 id="upFormTitle">Dosar UP nou</h3>
+        <form onsubmit="saveUP(event)">
+          <div class="form-group"><label>Număr dosar penal *</label><input type="text" id="uNr" required placeholder="ex: 123/P/2024"></div>
+          <div class="form-group"><label>Client *</label><input type="text" id="uClient" required placeholder="Nume client"></div>
+          <div class="form-group"><label>Tip client *</label>
+            <select id="uTipClient" required><option value="">Selectează...</option><option value="Suspect">Suspect</option><option value="Inculpat">Inculpat</option><option value="Persoană vătămată">Persoană vătămată</option></select>
+          </div>
+          <div class="form-group"><label>Obiect urmărire penală</label><textarea id="uObiect" placeholder="Fapta penală..."></textarea></div>
+          <div class="form-group"><label>Parchet *</label><input type="text" id="uParchet" required placeholder="Parchetul..."></div>
+          <div class="form-group"><label>Procuror</label><input type="text" id="uProcuror" placeholder="Nume procuror"></div>
+          <div class="form-group"><label>Polițist</label><input type="text" id="uPolitist" placeholder="Nume polițist"></div>
+          <div class="form-group"><label>Contact anchetă</label><input type="text" id="uContact" placeholder="Telefon anchetă"></div>
+          <div class="form-group"><label>Data audiere</label><input type="date" id="uAudiere"><small>Se adaugă automat în calendar</small></div>
+          <div class="form-group"><label>Notițe</label><textarea id="uNotite" placeholder="Notițe..."></textarea></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvează</button><button type="button" class="btn" onclick="hideForm('upForm')" style="background:#e9ecef;color:#495057">Anulează</button></div>
+        </form>
+      </div>
+      <input type="text" placeholder="🔍 Caută dosare UP..." onkeyup="filterList('upList',this.value)" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px">
+      <div id="upList"></div>
+    </div>
+
+    <!-- ── DOSARE ÎN LUCRU ─────────────────────────── -->
+    <div id="dosareLucru" class="tab-content">
+      <div style="margin-bottom:14px"><h2 style="color:#2d3748;margin-bottom:6px">Dosare în lucru</h2><p style="color:#5a6c7d;font-size:13px">Dosare fără termen de judecată</p></div>
+      <input type="text" placeholder="🔍 Caută..." onkeyup="filterList('lucruList',this.value)" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px">
+      <div id="lucruList" class="dosare-grid"></div>
+    </div>
+
+    <!-- ── DOSARE TERMINATE ────────────────────────── -->
+    <div id="dosareTerminate" class="tab-content">
+      <input type="text" placeholder="🔍 Caută..." onkeyup="filterList('terminateList',this.value)" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:14px">
+      <div id="terminateList" class="dosare-grid"></div>
+    </div>
+
+    <!-- ── TO-DO ──────────────────────────────────── -->
+    <div id="todo" class="tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <h2 style="color:#2d3748">Task-uri</h2>
+        <button class="btn btn-primary btn-sm" onclick="showForm('todoForm')">+ Task</button>
+      </div>
+      <div id="todoForm" style="display:none" class="form-panel">
+        <h3 id="todoFormTitle">Task nou</h3>
+        <form onsubmit="saveTodo(event)">
+          <div class="form-group"><label>Titlu *</label><input type="text" id="tTitlu" required placeholder="ex: Depunere înscris"></div>
+          <div class="form-group"><label>Descriere</label><textarea id="tDesc" placeholder="Detalii..."></textarea></div>
+          <div class="form-group"><label>Prioritate *</label>
+            <select id="tPrio" required><option value="">Selectează...</option><option value="urmarit">De urmărit</option><option value="urgent">Urgent</option><option value="foarte-urgent">Foarte urgent</option><option value="concediu">🏖️ Concediu</option></select>
+          </div>
+          <div class="form-group"><label>Data și ora limită</label><input type="datetime-local" id="tData"></div>
+          <div class="form-group"><label>Dosar asociat</label><select id="tDosar"><option value="">Fără dosar asociat</option></select></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvează</button><button type="button" class="btn" onclick="hideForm('todoForm')" style="background:#e2e8f0">Anulează</button></div>
+        </form>
+      </div>
+      <div style="margin-bottom:14px;display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="filtroPrio('all')" style="background:#6c757d;color:white">Toate</button>
+        <button class="btn btn-sm" onclick="filtroPrio('foarte-urgent')" style="background:#8b0000;color:white">F.urgent</button>
+        <button class="btn btn-sm" onclick="filtroPrio('urgent')" style="background:#dc3545;color:white">Urgent</button>
+        <button class="btn btn-sm" onclick="filtroPrio('urmarit')" style="background:#ffc107;color:#000">Urmărit</button>
+        <button class="btn btn-sm" onclick="filtroPrio('concediu')" style="background:linear-gradient(135deg,#17a2b8,#28a745);color:white">🏖️</button>
+      </div>
+      <div id="todoList"></div>
+    </div>
+
+    <!-- ── TERMENE ─────────────────────────────────── -->
+    <div id="termene" class="tab-content">
+      <div id="termenForm" style="display:none" class="form-panel">
+        <h3>Termen nou</h3>
+        <form onsubmit="saveTermen(event)">
+          <div class="form-group"><label>Dosar *</label><select id="trDosar" required><option value="">Selectează dosar...</option></select></div>
+          <div class="form-group"><label>Data și ora *</label><input type="datetime-local" id="trData" required></div>
+          <div class="form-group"><label>Tip termen *</label>
+            <select id="trTip" required><option value="">Selectează...</option><option value="judecata">Termen de judecată</option><option value="pronuntare">Pronunțare</option><option value="completare">Completare lipsuri</option><option value="depunere">Depunere cerere</option><option value="deadline">Termen limită</option><option value="altele">Altele</option></select>
+          </div>
+          <div class="form-group"><label>Notițe</label><textarea id="trNotite" placeholder="Detalii..."></textarea></div>
+          <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvează</button><button type="button" class="btn" onclick="hideForm('termenForm')" style="background:#e2e8f0">Anulează</button></div>
+        </form>
+      </div>
+      <div id="termeneList"></div>
+      <button class="fab" onclick="updateTrDosarSel();showForm('termenForm')">+</button>
+    </div>
+
+    <!-- ── CALENDAR ────────────────────────────────── -->
+    <div id="calendar" class="tab-content">
+      <div class="cal-header">
+        <button class="btn btn-sm btn-primary" onclick="prevLuna()">◀</button>
+        <h3 id="lunaText" style="color:#2d3748"></h3>
+        <button class="btn btn-sm btn-primary" onclick="nextLuna()">▶</button>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+    </div>
+  </div><!-- /content -->
+</div><!-- /app-container -->
+
+<!-- Modal fișă dosar -->
+<div id="fisaModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);overflow:auto">
+  <div style="background:white;margin:24px auto;max-width:800px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">
+    <div style="padding:18px 20px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0;font-size:20px">📁 Fișa dosarului</h2>
+      <button onclick="document.getElementById('fisaModal').style.display='none'" style="background:rgba(255,255,255,0.2);border:none;color:white;font-size:26px;cursor:pointer;width:38px;height:38px;border-radius:50%;line-height:1">&times;</button>
+    </div>
+    <div id="fisaContent" style="padding:22px;max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATE GLOBALE
+// ═══════════════════════════════════════════════════════════
+let clienti=[],dosare=[],dosareUP=[],dosareTerminate=[],dosareLucru=[],termene=[],todos=[];
+let lunaC=new Date(),editingDosarId=null,editingClientId=null,editingUPId=null,editingTodoId=null;
+let editFromLucru=false,editFromTerminate=false,deferredPrompt=null,termeneZile=14,appOK=false;
+
+// ═══════════════════════════════════════════════════════════
+// PORTAL JUST.RO – CONFIGURARE
+// ═══════════════════════════════════════════════════════════
+// Serverul Vercel rulează non-stop, gratuit, fără să faci nimic zilnic
+const PORTAL_BACKEND='https://agenda-juridica-backend.vercel.app/api/portal';
+
+const INST_MAP=[
+  ['curtea de apel alba iulia','CurteadeApelALBAIULIA'],['curtea de apel bacau','CurteadeApelBACAU'],
+  ['curtea de apel brasov','CurteadeApelBRASOV'],['curtea de apel bucuresti','CurteadeApelBUCURESTI'],
+  ['curtea de apel cluj','CurteadeApelCLUJ'],['curtea de apel constanta','CurteadeApelCONSTANTA'],
+  ['curtea de apel craiova','CurteadeApelCRAIOVA'],['curtea de apel galati','CurteadeApelGALATI'],
+  ['curtea de apel iasi','CurteadeApelIASI'],['curtea de apel oradea','CurteadeApelORADEA'],
+  ['curtea de apel pitesti','CurteadeApelPITESTI'],['curtea de apel ploiesti','CurteadeApelPLOIESTI'],
+  ['curtea de apel suceava','CurteadeApelSUCEAVA'],['curtea de apel targu mures','CurteadeApelTARGUMURES'],
+  ['curtea de apel timisoara','CurteadeApelTIMISOARA'],
+  ['tribunalul hunedoara','TribunalulHUNEDOARA'],['tribunalul alba','TribunalulALBA'],
+  ['tribunalul arad','TribunalulARAD'],['tribunalul arges','TribunalulARGES'],
+  ['tribunalul bacau','TribunalulBACAU'],['tribunalul bihor','TribunalulBIHOR'],
+  ['tribunalul bistrita','TribunalulBISTRITANASAUD'],['tribunalul botosani','TribunalulBOTOSANI'],
+  ['tribunalul brasov','TribunalulBRASOV'],['tribunalul braila','TribunalulBRAILA'],
+  ['tribunalul buzau','TribunalulBUZAU'],['tribunalul calarasi','TribunalulCALARASI'],
+  ['tribunalul caras','TribunalulCARASSEVERIN'],['tribunalul cluj','TribunalulCLUJ'],
+  ['tribunalul constanta','TribunalulCONSTANTA'],['tribunalul covasna','TribunalulCOVASNA'],
+  ['tribunalul dambovita','TribunalulDAMBOVITA'],['tribunalul dolj','TribunalulDOLJ'],
+  ['tribunalul galati','TribunalulGALATI'],['tribunalul giurgiu','TribunalulGIURGIU'],
+  ['tribunalul gorj','TribunalulGORJ'],['tribunalul harghita','TribunalulHARGHITA'],
+  ['tribunalul ialomita','TribunalulIALOMITA'],['tribunalul iasi','TribunalulIASI'],
+  ['tribunalul ilfov','TribunalulILFOV'],['tribunalul maramures','TribunalulMARAMURES'],
+  ['tribunalul mehedinti','TribunalulMEHEDINTI'],['tribunalul mures','TribunalulMURES'],
+  ['tribunalul neamt','TribunalulNEAMT'],['tribunalul olt','TribunalulOLT'],
+  ['tribunalul prahova','TribunalulPRAHOVA'],['tribunalul salaj','TribunalulSALAJ'],
+  ['tribunalul satu mare','TribunalulSATUMARE'],['tribunalul sibiu','TribunalulSIBIU'],
+  ['tribunalul suceava','TribunalulSUCEAVA'],['tribunalul teleorman','TribunalulTELEORMAN'],
+  ['tribunalul timis','TribunalulTIMIS'],['tribunalul tulcea','TribunalulTULCEA'],
+  ['tribunalul vaslui','TribunalulVASLUI'],['tribunalul valcea','TribunalulVALCEA'],
+  ['tribunalul vrancea','TribunalulVRANCEA'],
+  ['judecatoria hunedoara','JudecatoriaHUNEDOARA'],['judecatoria deva','JudecatoriaDEVA'],
+  ['judecatoria brad','JudecatoriaBRAD'],['judecatoria hateg','JudecatoriaHATEG'],
+  ['judecatoria petrosani','JudecatoriaPETROSANI'],['judecatoria orastie','JudecatoriaORASTIE'],
+  ['judecatoria alba iulia','JudecatoriaALBAIULIA'],['judecatoria aiud','JudecatoriaAIUD'],
+  ['judecatoria arad','JudecatoriaARAD'],['judecatoria bacau','JudecatoriaBACAU'],
+  ['judecatoria baia mare','JudecatoriaBAIAMARE'],['judecatoria bistrita','JudecatoriaBISTRITA'],
+  ['judecatoria botosani','JudecatoriaBOTOSANI'],['judecatoria brasov','JudecatoriaBRASOV'],
+  ['judecatoria braila','JudecatoriaBRAILA'],['judecatoria buzau','JudecatoriaBUZAU'],
+  ['judecatoria calarasi','JudecatoriaCALARASI'],['judecatoria caransebes','JudecatoriaCARANSEBES'],
+  ['judecatoria cluj','JudecatoriaCLUJNAPOCA'],['judecatoria constanta','JudecatoriaCONSTANTA'],
+  ['judecatoria craiova','JudecatoriaCRAIOVA'],['judecatoria drobeta','JudecatoriaDROBETATURNUSEVERIN'],
+  ['judecatoria fagaras','JudecatoriaFAGARAS'],['judecatoria focsani','JudecatoriaFOCSANI'],
+  ['judecatoria galati','JudecatoriaGALATI'],['judecatoria giurgiu','JudecatoriaGIURGIU'],
+  ['judecatoria iasi','JudecatoriaIASI'],['judecatoria lugoj','JudecatoriaLUGOJ'],
+  ['judecatoria medias','JudecatoriaMEDIAS'],['judecatoria miercurea','JudecatoriaMIERCUREACIUC'],
+  ['judecatoria oradea','JudecatoriaORADEA'],['judecatoria piatra neamt','JudecatoriaPIATRANEAMT'],
+  ['judecatoria pitesti','JudecatoriaPITESTI'],['judecatoria ploiesti','JudecatoriaPLOIESTI'],
+  ['judecatoria ramnicu valcea','JudecatoriaRAMNICUVALCEA'],['judecatoria resita','JudecatoriaRESITA'],
+  ['judecatoria roman','JudecatoriaROMAN'],['judecatoria satu mare','JudecatoriaSATUMARE'],
+  ['judecatoria sibiu','JudecatoriaSIBIU'],['judecatoria slatina','JudecatoriaSLATINA'],
+  ['judecatoria slobozia','JudecatoriaSLOBOZIA'],['judecatoria suceava','JudecatoriaSUCEAVA'],
+  ['judecatoria targoviste','JudecatoriaTARGOVISTE'],['judecatoria targu jiu','JudecatoriaTARGUJIU'],
+  ['judecatoria targu mures','JudecatoriaTARGUMURES'],['judecatoria timisoara','JudecatoriaTIMISOARA'],
+  ['judecatoria tulcea','JudecatoriaTULCEA'],['judecatoria turda','JudecatoriaTURDA'],
+  ['judecatoria vaslui','JudecatoriaVASLUI'],['judecatoria zalau','JudecatoriaZALAU'],
+  ['judecatoria alexandria','JudecatoriaALEXANDRIA'],['judecatoria buflea','JudecatoriaBUFTEA'],
+  ['judecatoria sector 1','JudecatoriaSECTORUL1BUCURESTI'],['judecatoria sector 2','JudecatoriaSECTORUL2BUCURESTI'],
+  ['judecatoria sector 3','JudecatoriaSECTORUL3BUCURESTI'],['judecatoria sector 4','JudecatoriaSECTORUL4BUCURESTI'],
+  ['judecatoria sector 5','JudecatoriaSECTORUL5BUCURESTI'],['judecatoria sector 6','JudecatoriaSECTORUL6BUCURESTI'],
+];
+
+function normInst(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\s]/g,'').trim();}
+function detectInst(s){const n=normInst(s);for(const[k,v]of INST_MAP)if(n.includes(normInst(k)))return v;return null;}
+function setPortalUI(cls,txt){const d=document.getElementById('pdot'),s=document.getElementById('ptxt');if(d)d.className='portal-dot '+cls;if(s)s.textContent=txt;}
+function isoToDT(iso,ora){if(!iso)return '';const d=iso.split('T')[0];if(ora&&/^\d{1,2}:\d{2}/.test(ora)){const[h,m]=ora.split(':');return d+'T'+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}return d+'T09:00';}
+function fmtPortal(iso){if(!iso)return '';const d=new Date(iso);return isNaN(d)?iso:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+
+async function apeleazaPortal(body){
+  const r=await fetch(PORTAL_BACKEND,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.eroare||'Eroare server');
+  return j.result;
+}
+
+function importTermen(dosarId,sed,doSave=true){
+  const dt=isoToDT(sed.data,sed.ora);if(!dt)return false;
+  if(termene.find(t=>t.dosarId===dosarId&&t.dataOra===dt))return false;
+  termene.push({id:Date.now()+Math.random(),dosarId,dataOra:dt,tip:'judecata',notite:sed.complet?'Complet: '+sed.complet:'',sursa:'portal.just.ro'});
+  if(doSave){saveData();renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();showAlert('✅ Termen importat: '+fmtPortal(sed.data),'success');}
+  return true;
+}
+
+async function autoSync(){
+  const all=[...dosare,...dosareLucru];
+  const cuInst=all.filter(d=>detectInst(d.instanta));
+  if(!cuInst.length){setPortalUI('','Portal: nicio instanță configurată');return;}
+  setPortalUI('running','Sincronizare portal ('+cuInst.length+' dosare)...');
+  let n=0,err=0;const now=new Date();
+  for(const d of cuInst){
+    try{
+      const rez=await apeleazaPortal({metoda:'CautareDosare',numarDosar:d.numar,institutie:detectInst(d.instanta)});
+      if(rez)for(const r of rez)for(const s of(r.sedinte||[]))if(new Date(s.data)>=now&&importTermen(d.id,s,false))n++;
+      await new Promise(r=>setTimeout(r,700));
+    }catch(e){err++;}
+  }
+  if(n>0){saveData();renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();setPortalUI('ok','✅ Portal: '+n+' termene noi!');showAlert('🔄 Sincronizare completă: '+n+' termene noi!','success');}
+  else if(err&&err===cuInst.length)setPortalUI('err','⚠️ Portal indisponibil momentan');
+  else setPortalUI('ok','✅ Portal sincronizat – noutăți: 0');
+}
+async function syncManual(){setPortalUI('running','Sincronizare manuală...');await autoSync();}
+
+// Modal sincronizare dosar specific
+function portalModal(dosarId){
+  const allD=[...dosare,...dosareLucru];const d=allD.find(x=>x.id===dosarId);if(!d)return;
+  const inst=detectInst(d.instanta);
+  document.getElementById('portalMod')?.remove();
+  const el=document.createElement('div');el.id='portalMod';el.className='modal-ov';
+  el.innerHTML=`<div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div><div style="font-size:16px;font-weight:700">🔄 Sincronizare portal.just.ro</div><div style="font-size:11px;opacity:0.8">Dosar: ${d.numar} • ${d.instanta}</div></div><button class="modal-close" onclick="document.getElementById('portalMod').remove()">×</button></div>
+    <div style="padding:14px 18px;border-bottom:1px solid #e2e8f0">
+      <div style="font-size:12px;color:#6c757d;margin-bottom:6px">Instanță detectată:</div>
+      ${inst?`<span style="background:#d4edda;color:#155724;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700">✅ ${inst}</span>`:`<div style="font-size:12px;color:#dc3545;margin-bottom:6px">⚠️ Nerecunoscută – introdu manual:</div><input id="pmInst" type="text" value="${d.instanta||''}" style="width:100%;padding:9px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px">`}
+    </div>
+    <div style="padding:14px 18px;border-bottom:1px solid #e2e8f0">
+      <div style="font-size:12px;font-weight:600;color:#2d3748;margin-bottom:6px">Număr dosar pe portal:</div>
+      <input id="pmNr" type="text" value="${d.numar||''}" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px">
+      <div style="font-size:11px;color:#6c757d;margin-top:6px">Sau caută după client:</div>
+      <input id="pmParte" type="text" placeholder="${d.client||'Nume parte'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;margin-top:4px">
+    </div>
+    <div style="padding:14px 18px"><button onclick="execPortalSearch(${dosarId})" id="pmBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer">🔍 Caută pe portal.just.ro</button></div>
+    <div id="pmRez" style="padding:0 18px 18px"></div>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+async function execPortalSearch(dosarId){
+  const allD=[...dosare,...dosareLucru];const d=allD.find(x=>x.id===dosarId);if(!d)return;
+  const btn=document.getElementById('pmBtn');const rez=document.getElementById('pmRez');
+  btn.disabled=true;btn.textContent='⏳ Caută...';
+  rez.innerHTML='<div style="text-align:center;padding:16px;color:#6c757d;font-size:13px">Conectare la portal.just.ro...</div>';
+  let inst=detectInst(d.instanta);
+  const mi=document.getElementById('pmInst');if(!inst&&mi)inst=detectInst(mi.value)||mi.value.trim();
+  const nr=(document.getElementById('pmNr')?.value||'').trim();
+  const parte=(document.getElementById('pmParte')?.value||'').trim();
+  if(!inst){rez.innerHTML='<div style="padding:14px;background:#f8d7da;border-radius:8px;color:#721c24;font-size:13px">⚠️ Instanța nu a putut fi identificată.</div>';btn.disabled=false;btn.textContent='🔍 Caută';return;}
+  if(!nr&&!parte){rez.innerHTML='<div style="padding:14px;background:#fff3cd;border-radius:8px;color:#856404;font-size:13px">⚠️ Completează numărul dosarului.</div>';btn.disabled=false;btn.textContent='🔍 Caută';return;}
+  try{
+    const r=await apeleazaPortal({metoda:'CautareDosare',numarDosar:nr||null,numeParte:parte||null,institutie:inst});
+    btn.disabled=false;btn.textContent='🔍 Caută din nou';
+    if(!r||!r.length){rez.innerHTML='<div style="padding:14px;background:#f8f9fa;border-radius:8px;text-align:center;color:#6c757d;font-size:13px">🔎 Niciun dosar găsit. Verifică numărul și instanța.</div>';return;}
+    window._pRez=r;showPortalRez(dosarId,r,rez);
+  }catch(e){btn.disabled=false;btn.textContent='🔍 Încearcă din nou';rez.innerHTML='<div style="padding:14px;background:#f8d7da;border-radius:8px;color:#721c24;font-size:13px">❌ '+e.message+'<br><small>Portalul poate fi temporar indisponibil.</small></div>';}
+}
+
+function showPortalRez(dosarId,lista,container){
+  const now=new Date();let h='<hr style="border:none;border-top:2px solid #e2e8f0;margin:0 0 14px"><div style="font-size:14px;font-weight:700;color:#2d3748;margin-bottom:12px">'+lista.length+' dosar(e) găsit(e)</div>';
+  lista.forEach((d,di)=>{
+    const viit=(d.sedinte||[]).filter(s=>new Date(s.data)>=now);
+    const trecut=(d.sedinte||[]).filter(s=>new Date(s.data)<now&&(s.solutie||s.solutieSumar));
+    h+=`<div style="border:2px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:12px;background:#fafafa">
+      <div style="font-size:15px;font-weight:700;color:#2a5298;margin-bottom:5px">📁 ${d.numar}</div>
+      <div style="font-size:12px;color:#6c757d;margin-bottom:8px">${d.institutie||''} • ${d.stadiuProcesual||''}</div>
+      ${(d.parti||[]).map(p=>`<span style="display:inline-block;background:#e6f0ff;color:#2a5298;padding:2px 8px;border-radius:10px;font-size:11px;margin:2px">${p.nume} <em>(${p.calitateParte})</em></span>`).join('')}
+      ${viit.length?`<div style="background:#e3f2fd;border-radius:8px;padding:10px;margin-top:10px">
+        <div style="font-size:13px;font-weight:700;color:#1976d2;margin-bottom:8px">📅 Termene viitoare: ${viit.length}</div>
+        ${viit.map((s,si)=>`<div style="background:white;border-left:4px solid #2196f3;padding:10px;border-radius:0 6px 6px 0;margin-bottom:7px">
+          <div style="font-size:13px;font-weight:600;color:#1565c0">${fmtPortal(s.data)} ${s.ora?'ora '+s.ora:''}</div>
+          ${s.complet?`<div style="font-size:11px;color:#1976d2">Complet: ${s.complet}</div>`:''}
+          <button onclick="importTermen(${dosarId},window._pRez[${di}].sedinte.filter(x=>new Date(x.data)>=new Date())[${si}],true)" style="margin-top:7px;padding:5px 12px;background:#2196f3;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">✅ Importă</button>
+        </div>`).join('')}
+        <button onclick="importAll(${dosarId},${di})" style="width:100%;padding:9px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📥 Importă TOATE (${viit.length})</button>
+      </div>`:'<div style="font-size:12px;color:#6c757d;margin-top:8px">Nu sunt termene viitoare.</div>'}
+      ${trecut.length?`<details style="margin-top:8px"><summary style="font-size:12px;font-weight:600;color:#6c757d;cursor:pointer;padding:6px;background:#f8f9fa;border-radius:6px">📜 Soluții trecute (${trecut.length})</summary>
+        <div style="margin-top:6px">${trecut.slice(0,6).map(s=>`<div style="padding:8px;background:#f8f9fa;border-left:3px solid #6c757d;border-radius:0 6px 6px 0;margin-bottom:5px"><div style="font-size:12px;font-weight:600">${fmtPortal(s.data)}</div>${s.solutieSumar?`<div style="font-size:12px;color:#2d3748;margin-top:3px;font-style:italic">"${s.solutieSumar}"</div>`:''}</div>`).join('')}
+        ${trecut.length>6?`<div style="font-size:11px;color:#6c757d">... și încă ${trecut.length-6}</div>`:''}</div></details>`:''}
+    </div>`;
+  });
+  container.innerHTML=h;
+}
+function importAll(dosarId,di){
+  const now=new Date();const d=window._pRez?.[di];if(!d)return;
+  const viit=(d.sedinte||[]).filter(s=>new Date(s.data)>=now);
+  let n=0;viit.forEach(s=>{if(importTermen(dosarId,s,false))n++;});
+  if(n){saveData();renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();showAlert('✅ '+n+' termene importate!','success');document.getElementById('portalMod')?.remove();}
+  else showAlert('Termenele existau deja în agendă.','info');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').style.display='block';});
+function isIOS(){return/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;}
+function isStandalone(){return('standalone'in navigator)&&navigator.standalone;}
+if(isIOS()&&!isStandalone()){document.getElementById('installBanner').style.display='block';document.getElementById('installBanner').querySelector('.install-row').innerHTML='<div style="padding:4px">📱 <strong>Instalează pe iPhone/iPad:</strong> apasă □ Share → Add to Home Screen</div>';}
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(r=>{if(r.outcome==='accepted'){document.getElementById('installBanner').style.display='none';}deferredPrompt=null;});}else if(isIOS())alert('📱 Safari → □ Share → Add to Home Screen');else showAlert('📱 Deschide în Chrome pentru a instala.','info');}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITARE
+// ═══════════════════════════════════════════════════════════
+function fmtDate(v){const d=new Date(v);return isNaN(d)?v:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+function fmtDT(v){const d=new Date(v);return isNaN(d)?v:fmtDate(v)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function fmtMoney(a){return new Intl.NumberFormat('ro-RO',{style:'currency',currency:'RON'}).format(a||0);}
+function showAlert(msg,type){const a=document.createElement('div');a.className='alert alert-'+type;a.textContent=msg;const c=document.querySelector('.content');c.insertBefore(a,c.firstChild);setTimeout(()=>a.remove(),4000);}
+function showForm(id){document.getElementById(id).style.display='block';window.scrollTo(0,0);}
+function hideForm(id){document.getElementById(id).style.display='none';document.querySelector('#'+id+' form')?.reset();}
+function filterList(listId,q){document.querySelectorAll('#'+listId+' .dosar-card, #'+listId+' .cli-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(q.toLowerCase())?'block':'none';});}
+function goTab(name,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById(name).classList.add('active');if(name==='calendar')renderCalendar();if(name==='dashboard')updateDashboard();}
+
+// ═══════════════════════════════════════════════════════════
+// SAVE / LOAD
+// ═══════════════════════════════════════════════════════════
+function saveData(){try{['clienti','dosare','dosareUP','dosareTerminate','dosareLucru','termene','todos'].forEach(k=>localStorage.setItem(k,JSON.stringify(eval(k))));}catch(e){if(e.name==='QuotaExceededError')alert('❌ Spațiu insuficient! Fă backup.');else alert('❌ Eroare salvare: '+e.message);throw e;}}
+function loadData(){try{['clienti','dosare','dosareUP','dosareTerminate','dosareLucru','termene','todos'].forEach(k=>{const v=localStorage.getItem(k);if(v)eval(k+'='+v);});}catch(e){alert('❌ Eroare la încărcarea datelor!');console.error(e);}}
+
+function exportData(){
+  const data={clienti,dosare,dosareUP,dosareTerminate,dosareLucru,termene,todos,exportDate:new Date().toISOString(),version:'3.0'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;
+  const d=new Date();a.download='agenda-juridica-'+String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear()+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  localStorage.setItem('lastBackup',new Date().toISOString());showAlert('✅ Backup creat!','success');
+}
+function checkAutoBackup(){const lb=localStorage.getItem('lastBackup');if(!lb){localStorage.setItem('lastBackup',new Date().toISOString());return;}if(Math.floor((new Date()-new Date(lb))/(864e5))>=7){exportData();showAlert('📦 Backup automat săptămânal creat!','success');}}
+function importData(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){try{const data=JSON.parse(e.target.result);const ed=data.exportDate?new Date(data.exportDate):null;const ef=ed?fmtDate(ed):'necunoscută';if(confirm('📦 Import: '+((data.clienti||[]).length)+' clienți, '+((data.dosare||[]).length)+' dosare\n📅 Export: '+ef+'\n\n⚠️ Datele actuale vor fi înlocuite. Continui?')){clienti=data.clienti||[];dosare=data.dosare||[];dosareUP=data.dosareUP||[];dosareTerminate=data.dosareTerminate||[];dosareLucru=data.dosareLucru||[];termene=data.termene||[];todos=data.todos||[];saveData();renderAll();showAlert('✅ Date importate!','success');}}catch(err){showAlert('❌ Eroare la import!','danger');}};r.readAsText(f);ev.target.value='';}
+function renderAll(){renderDosare();renderLucru();renderTerminate();renderTermene();renderTodos();renderClienti();renderUP();renderCalendar();updateDashboard();}
+
+// ═══════════════════════════════════════════════════════════
+// DOSARE
+// ═══════════════════════════════════════════════════════════
+function saveDosar(e){
+  e.preventDefault();
+  const dd={numar:document.getElementById('dNr').value.trim(),instanta:document.getElementById('dInst').value.trim(),tip:document.getElementById('dTip').value,client:document.getElementById('dClient').value.trim(),obiect:document.getElementById('dObiect').value.trim(),linkEcris:document.getElementById('dLink').value.trim(),stadiuProcesual:document.getElementById('dStadiu').value,caleAtac:document.getElementById('dCale').value,notiteDosar:document.getElementById('dNotite').value.trim()};
+  if(!dd.numar||!dd.instanta||!dd.tip){showAlert('⚠️ Completează câmpurile obligatorii!','danger');return;}
+  if(editingDosarId){
+    const arr=editFromLucru?dosareLucru:editFromTerminate?dosareTerminate:dosare;
+    const i=arr.findIndex(x=>x.id===editingDosarId);if(i!==-1){arr[i]={...arr[i],...dd};showAlert('✅ Dosar actualizat!','success');}
+  }else{
+    if(!editFromLucru&&!editFromTerminate&&dosare.find(x=>x.numar.toLowerCase()===dd.numar.toLowerCase())&&!confirm('⚠️ Dosarul '+dd.numar+' există deja. Continui?'))return;
+    dosare.push({id:Date.now(),...dd,sedinte:[],sarcini:[],dataAdaugare:new Date().toISOString()});showAlert('✅ Dosar adăugat!','success');
+  }
+  saveData();hideForm('dosarForm');editingDosarId=null;editFromLucru=false;editFromTerminate=false;renderDosare();renderLucru();renderTerminate();updateDashboard();
+}
+function editDosar(id,arr='dosare'){
+  const src=arr==='lucru'?dosareLucru:arr==='terminate'?dosareTerminate:dosare;
+  const d=src.find(x=>x.id===id);if(!d)return;
+  editingDosarId=id;editFromLucru=arr==='lucru';editFromTerminate=arr==='terminate';
+  document.getElementById('dNr').value=d.numar;document.getElementById('dInst').value=d.instanta;document.getElementById('dTip').value=d.tip;document.getElementById('dClient').value=d.client||'';document.getElementById('dObiect').value=d.obiect||'';document.getElementById('dLink').value=d.linkEcris||'';document.getElementById('dStadiu').value=d.stadiuProcesual||'Fond';document.getElementById('dCale').value=d.caleAtac||'Niciuna';document.getElementById('dNotite').value=d.notiteDosar||'';
+  document.getElementById('dosarFormTitle').textContent='Editează dosar';showForm('dosarForm');
+  // dacă editezi din lucru/terminate, navighează la tab dosare
+  if(arr!=='dosare')goTab('dosare',document.querySelectorAll('.tab')[2]);
+}
+function terminaDosar(id){if(!confirm('Muți dosarul la terminate?'))return;const i=dosare.findIndex(x=>x.id===id);if(i!==-1){dosare[i].dataTerminare=new Date().toISOString();dosareTerminate.push(dosare[i]);dosare.splice(i,1);saveData();renderDosare();updateDashboard();showAlert('Dosar terminat!','success');}}
+function deleteDosar(id){if(!confirm('Ștergi dosarul definitiv?'))return;dosare=dosare.filter(x=>x.id!==id);termene=termene.filter(t=>t.dosarId!==id);saveData();renderDosare();renderTermene();updateDashboard();showAlert('Dosar șters!','danger');}
+function mutaLaLucru(id){if(!confirm('Muți dosarul la "În lucru"?'))return;const i=dosare.findIndex(x=>x.id===id);if(i!==-1){dosareLucru.push(dosare[i]);dosare.splice(i,1);saveData();renderDosare();showAlert('Mutat la În lucru!','success');}}
+function mutaLaActive(id){if(!confirm('Muți dosarul la active?'))return;const i=dosareLucru.findIndex(x=>x.id===id);if(i!==-1){const d=dosareLucru[i];if(d.isUP){dosareUP.push({id:d.id,numar:d.numar,client:d.client,tipClient:d.tipClient||'Suspect',obiect:d.obiect,parchet:d.instanta,procuror:d.procuror||'',politist:d.politist||'',contactAncheta:d.contactAncheta||'',dataAudiere:d.dataAudiere||'',notite:d.notiteDosar||'',dataAdaugare:d.dataAdaugare});dosareLucru.splice(i,1);saveData();renderLucru();renderUP();showAlert('Mutat la UP!','success');}else{dosare.push(d);dosareLucru.splice(i,1);saveData();renderLucru();renderDosare();showAlert('Mutat la active!','success');}}}
+function reactivaTerminat(id){if(!confirm('Reactivezi dosarul?'))return;const i=dosareTerminate.findIndex(x=>x.id===id);if(i!==-1){const d=dosareTerminate[i];delete d.dataTerminare;if(d.isUP){dosareUP.push({id:d.id,numar:d.numar,client:d.client,tipClient:d.tipClient||'Suspect',obiect:d.obiect,parchet:d.instanta,procuror:d.procuror||'',politist:d.politist||'',contactAncheta:d.contactAncheta||'',dataAudiere:d.dataAudiere||'',notite:d.notiteDosar||'',dataAdaugare:d.dataAdaugare});dosareTerminate.splice(i,1);saveData();renderTerminate();renderUP();showAlert('Dosar UP reactivat!','success');}else{dosare.push(d);dosareTerminate.splice(i,1);saveData();renderTerminate();renderDosare();showAlert('Dosar reactivat!','success');}}}
+
+function cardDosar(d,source='dosare'){
+  const now=new Date();
+  const dt=termene.filter(t=>t.dosarId===d.id);
+  const nxt=dt.filter(t=>new Date(t.dataOra)>now).sort((a,b)=>new Date(a.dataOra)-new Date(b.dataOra))[0];
+  const hasSrc=dt.some(t=>t.sursa==='portal.just.ro');
+  let actions='';
+  if(source==='dosare'){actions=`<button class="btn btn-primary btn-sm" onclick="viewFisa(${d.id})">👁️ Fișă</button><button class="btn btn-primary btn-sm" onclick="editDosar(${d.id},'dosare')">✏️</button><button class="btn btn-primary btn-sm" onclick="addTermenQuick(${d.id})">📅+</button><button class="btn btn-teal btn-sm" onclick="portalModal(${d.id})" title="Sincronizare portal">🔄 Portal</button><button class="btn btn-sm" onclick="mutaLaLucru(${d.id})" style="background:#ffc107;color:#000">⚙️</button><button class="btn btn-success btn-sm" onclick="terminaDosar(${d.id})">✅</button><button class="btn btn-danger btn-sm" onclick="deleteDosar(${d.id})">🗑️</button>`;}
+  else if(source==='lucru'){actions=`<button class="btn btn-primary btn-sm" onclick="editDosar(${d.id},'lucru')">✏️</button><button class="btn btn-teal btn-sm" onclick="portalModal(${d.id})" title="Sincronizare portal">🔄 Portal</button><button class="btn btn-primary btn-sm" onclick="mutaLaActive(${d.id})">→ ${d.isUP?'UP':'Active'}</button><button class="btn btn-danger btn-sm" onclick="deleteLucru(${d.id})">🗑️</button>`;}
+  else if(source==='terminate'){actions=`<button class="btn btn-primary btn-sm" onclick="editDosar(${d.id},'terminate')">✏️</button><button class="btn btn-primary btn-sm" onclick="reactivaTerminat(${d.id})">→ Reactivează</button><button class="btn btn-danger btn-sm" onclick="deleteTerminat(${d.id})">🗑️</button>`;}
+  return`<div class="dosar-card">
+    <div class="dosar-numar">${d.numar}${hasSrc?' <span style="font-size:9px;background:#17a2b8;color:white;padding:2px 6px;border-radius:8px">🔄sync</span>':''}</div>
+    <span class="badge badge-${d.tip}">${d.tip}</span>${d.isUP?'<span class="badge" style="background:#f3e5f5;color:#6a1b9a">UP</span>':''}${source==='lucru'?'<span class="badge" style="background:#fff3cd;color:#856404">ÎN LUCRU</span>':''}${source==='terminate'?'<span class="badge" style="background:#d4edda;color:#155724">TERMINAT</span>':''}
+    <div class="dosar-info"><strong>🏛️</strong> ${d.instanta}</div>
+    ${d.client?`<div class="dosar-info"><strong>👤</strong> ${d.client}</div>`:''}
+    ${d.obiect?`<div class="dosar-info"><strong>📝</strong> ${d.obiect}</div>`:''}
+    ${d.linkEcris?`<div class="dosar-info"><strong>🔗</strong> <a href="${d.linkEcris}" target="_blank" onclick="event.preventDefault();window.open('${d.linkEcris}','_blank')">Portal</a></div>`:''}
+    <div class="dosar-info"><strong>📅 Termene:</strong> ${dt.length}</div>
+    ${nxt?`<div style="margin-top:9px;padding:10px;background:#E3F2FD;border-left:4px solid #2196F3;border-radius:6px"><strong style="color:#1976D2;font-size:13px">📅 Următor:</strong><div style="color:#0D47A1;font-weight:600;margin-top:3px">${fmtDT(nxt.dataOra)}</div><div style="color:#1976D2;font-size:11px">${nxt.tip}${nxt.sursa==='portal.just.ro'?' • <em>portal</em>':''}</div></div>`:'<div style="margin-top:8px;padding:9px;background:#f8f9fa;border-radius:6px;font-size:12px;color:#6c757d">📅 Nu are termene viitoare</div>'}
+    ${source==='terminate'?`<div class="dosar-info"><strong>Terminat:</strong> ${fmtDate(d.dataTerminare)}</div>`:`<div class="dosar-info"><strong>Adăugat:</strong> ${fmtDate(d.dataAdaugare)}</div>`}
+    <div class="dosar-actions">${actions}</div>
+  </div>`;
+}
+function renderDosare(){const c=document.getElementById('dosareList');if(!dosare.length){c.innerHTML='<div class="empty-state"><h3>Nu ai dosare active</h3><p>Apasă + pentru a adăuga</p></div>';return;}const now=new Date();const sorted=[...dosare].sort((a,b)=>{const ta=termene.filter(t=>t.dosarId===a.id&&new Date(t.dataOra)>now).sort((x,y)=>new Date(x.dataOra)-new Date(y.dataOra))[0];const tb=termene.filter(t=>t.dosarId===b.id&&new Date(t.dataOra)>now).sort((x,y)=>new Date(x.dataOra)-new Date(y.dataOra))[0];if(!ta&&!tb)return 0;if(!ta)return 1;if(!tb)return-1;return new Date(ta.dataOra)-new Date(tb.dataOra);});c.innerHTML=sorted.map(d=>cardDosar(d,'dosare')).join('');}
+function renderLucru(){const c=document.getElementById('lucruList');if(!dosareLucru.length){c.innerHTML='<div class="empty-state"><h3>Nu ai dosare în lucru</h3></div>';return;}c.innerHTML=dosareLucru.map(d=>cardDosar(d,'lucru')).join('');}
+function renderTerminate(){const c=document.getElementById('terminateList');if(!dosareTerminate.length){c.innerHTML='<div class="empty-state"><h3>Nu ai dosare terminate</h3></div>';return;}c.innerHTML=dosareTerminate.map(d=>cardDosar(d,'terminate')).join('');}
+function deleteLucru(id){if(!confirm('Ștergi dosarul definitiv?'))return;dosareLucru=dosareLucru.filter(x=>x.id!==id);saveData();renderLucru();showAlert('Dosar șters!','danger');}
+function deleteTerminat(id){if(!confirm('Ștergi dosarul definitiv?'))return;dosareTerminate=dosareTerminate.filter(x=>x.id!==id);saveData();renderTerminate();showAlert('Dosar șters!','danger');}
+
+// ═══ ADAUGĂ TERMEN RAPID ════════════════════════════════════
+function addTermenQuick(dosarId){
+  const d=[...dosare,...dosareLucru].find(x=>x.id===dosarId);if(!d)return;
+  const el=document.createElement('div');el.className='modal-ov';el.id='qTM';
+  el.innerHTML=`<div class="modal-box" style="max-width:400px" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div style="font-size:15px;font-weight:700">📅 Termen – ${d.numar}</div><button class="modal-close" onclick="document.getElementById('qTM').remove()">×</button></div>
+    <div style="padding:16px">
+      <div class="form-group"><label>Data și ora *</label><input type="datetime-local" id="qtData" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:16px"></div>
+      <div class="form-group"><label>Tip</label><select id="qtTip" style="width:100%;padding:11px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px"><option value="judecata">Termen de judecată</option><option value="pronuntare">Pronunțare</option><option value="completare">Completare lipsuri</option><option value="depunere">Depunere cerere</option><option value="deadline">Termen limită</option><option value="altele">Altele</option></select></div>
+      <div class="form-group"><label>Notițe</label><textarea id="qtNote" rows="3" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px"></textarea></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="saveQuickTermen(${dosarId})" class="btn btn-primary" style="flex:1">Salvează</button>
+        <button onclick="document.getElementById('qTM').remove()" class="btn" style="flex:1;background:#e2e8f0">Anulează</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function saveQuickTermen(dosarId){
+  const dt=document.getElementById('qtData').value;if(!dt){alert('Introdu data!');return;}
+  termene.push({id:Date.now(),dosarId,dataOra:dt,tip:document.getElementById('qtTip').value,notite:document.getElementById('qtNote').value});
+  saveData();renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();
+  document.getElementById('qTM').remove();showAlert('✅ Termen adăugat!','success');
+}
+
+// ═══ TERMENE ════════════════════════════════════════════════
+function updateTrDosarSel(){const s=document.getElementById('trDosar');const all=[...dosare,...dosareLucru];s.innerHTML='<option value="">Selectează dosar...</option>'+all.map(d=>`<option value="${d.id}">${d.numar}</option>`).join('');}
+function saveTermen(e){e.preventDefault();termene.push({id:Date.now(),dosarId:parseInt(document.getElementById('trDosar').value),dataOra:document.getElementById('trData').value,tip:document.getElementById('trTip').value,notite:document.getElementById('trNotite').value});saveData();hideForm('termenForm');renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();showAlert('✅ Termen adăugat!','success');}
+function deleteTermen(id){if(!confirm('Ștergi termenul?'))return;termene=termene.filter(t=>t.id!==id);saveData();renderTermene();renderDosare();renderLucru();renderCalendar();updateDashboard();showAlert('🗑️ Termen șters!','danger');}
+function renderTermene(){
+  const c=document.getElementById('termeneList');
+  if(!termene.length){c.innerHTML='<div class="empty-state"><h3>Nu ai termene</h3><p>Apasă + pentru a adăuga</p></div>';return;}
+  const sorted=[...termene].sort((a,b)=>new Date(a.dataOra)-new Date(b.dataOra));
+  const now=new Date();const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  c.innerHTML=sorted.map(t=>{
+    const allD=[...dosare,...dosareLucru,...dosareTerminate];
+    const d=allD.find(x=>x.id===t.dosarId);
+    const td=new Date(t.dataOra);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());
+    const days=Math.round((ts-today)/864e5);const past=td<now;const urg=days<=7&&days>=0;
+    return`<div class="termen-card" style="opacity:${past?0.5:1};${past?'background:#f8f9fa':''}">
+      <div class="termen-data">${fmtDT(t.dataOra)}${past?'<span class="badge" style="background:#6c757d;color:white">TRECUT</span>':''}${t.sursa==='portal.just.ro'?'<span style="font-size:9px;background:#17a2b8;color:white;padding:2px 6px;border-radius:8px">🔄portal</span>':''}</div>
+      <div class="termen-detalii"><strong>Dosar:</strong> ${d?d.numar:'N/A'} • <strong>Tip:</strong> ${t.tip}${urg&&!past?` • <strong style="color:#dc3545">${days===0?'ASTĂZI':days===1?'MÂINE':'în '+days+' zile'}</strong>`:''}</div>
+      ${t.notite?`<div class="termen-detalii" style="margin-top:5px">${t.notite}</div>`:''}
+      <div style="margin-top:9px"><button class="btn btn-danger btn-sm" onclick="deleteTermen(${t.id})">🗑️ Șterge</button></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ DASHBOARD ════════════════════════════════════════════
+function setZile(z){termeneZile=z;['7','14','30'].forEach(x=>{const b=document.getElementById('bz'+x);if(b){b.style.background=String(z)===x?'#2a5298':'transparent';b.style.color=String(z)===x?'white':'#718096';}});updateDashboard();}
+function updateDashboard(){
+  document.getElementById('sDosare').textContent=dosare.length;
+  document.getElementById('sLucru').textContent=dosareLucru.length;
+  const now=new Date();const vii=termene.filter(t=>new Date(t.dataOra)>now);
+  document.getElementById('sTermene').textContent=vii.length;
+  const pnd=todos.filter(t=>!t.completed);document.getElementById('sTodo').textContent=pnd.length;
+  const b=document.getElementById('calBadge');const ms=`${lunaC.getFullYear()}-${String(lunaC.getMonth()+1).padStart(2,'0')}`;
+  const nl=termene.filter(t=>t.dataOra&&t.dataOra.startsWith(ms)).length;
+  if(b){if(nl>0){b.textContent=nl;b.style.display='inline';}else b.style.display='none';}
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  // Task-uri urgente
+  const urg=pnd.filter(t=>{if(!t.dataLimita)return false;const td=new Date(t.dataLimita);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());const diff=Math.round((ts-today)/864e5);return t.prioritate==='concediu'?diff>=0&&diff<=14:diff<=7&&diff>=-7;}).sort((a,b2)=>{if(a.prioritate==='concediu'&&b2.prioritate!=='concediu')return 1;if(a.prioritate!=='concediu'&&b2.prioritate==='concediu')return-1;return new Date(a.dataLimita)-new Date(b2.dataLimita);});
+  const ub=document.getElementById('urgBadge');const cu=urg.filter(t=>t.prioritate!=='concediu').length;
+  if(ub){if(cu>0){ub.textContent=cu;ub.style.display='inline';}else ub.style.display='none';}
+  const pl={'foarte-urgent':'FOARTE URGENT','urgent':'URGENT','urmarit':'DE URMĂRIT','concediu':'🏖️ CONCEDIU'};
+  const tc=document.getElementById('dashTodo');
+  if(!urg.length){tc.innerHTML='<p style="color:#5a6c7d">Nu ai task-uri în curând 🎉</p>';}
+  else tc.innerHTML=urg.map(t=>{
+    const allD=[...dosare,...dosareLucru];const d=allD.find(x=>x.id===t.dosarId);
+    const td=new Date(t.dataLimita);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());
+    const days=Math.round((ts-today)/864e5);
+    let dBadge=days<0?`<span class="badge-zile" style="background:#8b0000">ÎNTÂRZIAT ${Math.abs(days)}Z</span>`:days===0?'<span class="badge-zile" style="background:#dc3545">ASTĂZI</span>':days===1?'<span class="badge-zile" style="background:#e91e63">MÂINE</span>':`<span class="badge-zile" style="background:#e91e63">ÎN ${days} ZILE</span>`;
+    if(t.prioritate==='concediu')return`<div class="termen-card" style="border-left-color:#17a2b8;background:linear-gradient(135deg,#e0f7fa,#e8f5e9);padding:12px"><div style="font-size:20px;text-align:center">🏖️</div><div style="font-weight:700;font-size:13px;color:#00838f;text-align:center">${t.titlu}</div><div style="font-size:11px;text-align:center;color:#00838f">${t.dataLimita?fmtDate(t.dataLimita):''}</div><div style="text-align:center;margin-top:5px">${dBadge}</div></div>`;
+    return`<div class="termen-card" style="border-left-color:${days<0?'#8b0000':'#e91e63'}"><div class="termen-data">✅ ${t.titlu}<span class="pbadge-${t.prioritate}">${pl[t.prioritate]}</span>${dBadge}</div><div class="termen-detalii">${t.descriere?`<div style="margin-bottom:4px">${t.descriere}</div>`:''} ${t.dataLimita?`<div><strong>📅</strong> ${fmtDT(t.dataLimita)}</div>`:''} ${d?`<div><strong>📁</strong> ${d.numar}</div>`:''}</div></div>`;
+  }).join('');
+  // Termene viitoare
+  const uDash=termene.filter(t=>{const td=new Date(t.dataOra);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());return Math.round((ts-today)/864e5)>=0&&Math.round((ts-today)/864e5)<=termeneZile;}).sort((a,b2)=>new Date(a.dataOra)-new Date(b2.dataOra));
+  const dc=document.getElementById('dashTermene');
+  if(!uDash.length){dc.innerHTML='<p style="color:#5a6c7d">Nu ai termene în această perioadă 🎉</p>';}
+  else dc.innerHTML=uDash.map(t=>{
+    const allD=[...dosare,...dosareLucru,...dosareTerminate];const d=allD.find(x=>x.id===t.dosarId);
+    const td=new Date(t.dataOra);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());
+    const days=Math.round((ts-today)/864e5);
+    let bg,bc,tc2;if(days<=1){bg='#FFEBEE';bc='#c62828';tc2='#b71c1c';}else if(days<=7){bg='#FFF3E0';bc='#e65100';tc2='#bf360c';}else{bg='#E3F2FD';bc='#2196F3';tc2='#1565C0';}
+    return`<div class="termen-card" style="border-left-color:${bc};background:${bg};cursor:pointer" onclick="openDosarMini(${t.dosarId})">
+      <div class="termen-data" style="color:${tc2}">⏰ ${fmtDT(t.dataOra)}<span class="badge-zile" style="background:${bc}">${days===0?'ASTĂZI':days===1?'MÂINE':'ÎN '+days+' ZILE'}</span>${t.sursa==='portal.just.ro'?'<span style="font-size:9px;background:#17a2b8;color:white;padding:2px 6px;border-radius:8px">🔄</span>':''}</div>
+      <div class="termen-detalii"><div style="font-weight:700;color:${tc2};font-size:16px;margin-bottom:6px">📁 ${d?d.numar:'N/A'}</div>${d?.client?`<div style="font-weight:600;color:${tc2};font-size:14px;margin-bottom:4px">👤 ${d.client}</div>`:''}<div style="font-size:13px;color:${tc2}">⚖️ ${t.tip}</div>${t.notite?`<div style="margin-top:8px;padding:10px;background:rgba(255,255,255,0.5);border-radius:7px;font-size:13px;color:${tc2}">${t.notite}</div>`:''}</div>
+    </div>`;
+  }).join('');
+}
+function openDosarMini(dosarId){const allD=[...dosare,...dosareLucru,...dosareTerminate];const d=allD.find(x=>x.id===dosarId);if(!d)return;viewFisa(dosarId);}
+
+// ═══ CALENDAR ═════════════════════════════════════════════
+function renderCalendar(){
+  const y=lunaC.getFullYear(),mo=lunaC.getMonth();
+  const mn=['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+  document.getElementById('lunaText').textContent=mn[mo]+' '+y;
+  const ms=`${y}-${String(mo+1).padStart(2,'0')}`;
+  const nl=termene.filter(t=>t.dataOra&&t.dataOra.startsWith(ms)).length;
+  const cb=document.getElementById('calBadge');if(cb){if(nl){cb.textContent=nl;cb.style.display='inline';}else cb.style.display='none';}
+  const fd=new Date(y,mo,1).getDay();const dim=new Date(y,mo+1,0).getDate();
+  let h='';['L','M','M','J','V','S','D'].forEach(d=>{h+=`<div class="cal-day" style="border:none;background:transparent;height:26px;font-weight:700;color:#2a5298">${d}</div>`;});
+  const sd=fd===0?6:fd-1;for(let i=0;i<sd;i++)h+='<div class="cal-day" style="border:none"></div>';
+  for(let day=1;day<=dim;day++){
+    const ds=`${y}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const dt=termene.filter(t=>t.dataOra.startsWith(ds));
+    const dtd=todos.filter(t=>t.dataLimita&&t.dataLimita.startsWith(ds)&&!t.completed);
+    const dc=dtd.filter(t=>t.prioritate==='concediu');const dtn=dtd.filter(t=>t.prioritate!=='concediu');
+    const isT=new Date(y,mo,day).toDateString()===new Date().toDateString();
+    let cl='cal-day';if(isT)cl+=' today';if(dc.length)cl+=' has-c';else if(dt.length||dtn.length)cl+=' has-t';
+    h+=`<div class="${cl}" onclick="dayDetails('${ds}')"><div style="font-size:12px;font-weight:600">${day}</div>${dt.length?`<div style="font-size:9px;color:#2a5298">📅${dt.length}</div>`:''}${dtn.length?`<div style="font-size:9px;color:#dc3545">✓${dtn.length}</div>`:''}${dc.length?`<div style="font-size:11px">🏖️</div>`:''}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=h;
+}
+function prevLuna(){lunaC.setMonth(lunaC.getMonth()-1);renderCalendar();}
+function nextLuna(){lunaC.setMonth(lunaC.getMonth()+1);renderCalendar();}
+function dayDetails(ds){
+  const[y,mo,d]=ds.split('-');const dt=termene.filter(t=>t.dataOra.startsWith(ds));const dtd=todos.filter(t=>t.dataLimita&&t.dataLimita.startsWith(ds));
+  const allD=[...dosare,...dosareLucru,...dosareTerminate];
+  const el=document.createElement('div');el.className='modal-ov';el.onclick=()=>el.remove();
+  let h=`<div class="modal-box" style="max-width:500px" onclick="event.stopPropagation()"><div class="modal-hdr"><h3 style="margin:0;font-size:17px">📅 ${d}/${mo}/${y}</h3><button class="modal-close" onclick="this.closest('.modal-ov').remove()">×</button></div><div style="padding:18px">`;
+  if(!dt.length&&!dtd.length){h+='<p style="color:#6c757d;text-align:center;padding:30px 0">Nu ai evenimente în această zi</p>';}
+  else{
+    if(dt.length){h+=`<h4 style="color:#2a5298;margin-bottom:10px">📅 Termene (${dt.length})</h4>`;dt.forEach(t=>{const dv=allD.find(x=>x.id===t.dosarId);h+=`<div style="background:#E3F2FD;border-left:4px solid #2196F3;padding:11px;border-radius:8px;margin-bottom:9px"><div style="font-weight:600;color:#1976D2">${fmtDT(t.dataOra)}</div><div style="font-size:13px"><strong>Dosar:</strong> ${dv?dv.numar:'N/A'} • ${t.tip}</div>${t.notite?`<div style="font-size:12px;margin-top:5px;color:#555">${t.notite}</div>`:''}</div>`;});}
+    if(dtd.length){h+=`<h4 style="color:#dc3545;margin:16px 0 10px">✓ Task-uri (${dtd.length})</h4>`;dtd.forEach(t=>{h+=`<div style="background:#fff3f3;border-left:4px solid #dc3545;padding:11px;border-radius:8px;margin-bottom:9px"><div style="font-weight:600">${t.titlu}</div>${t.descriere?`<div style="font-size:12px;margin-top:4px">${t.descriere}</div>`:''}</div>`;});}
+  }
+  h+='</div></div>';el.innerHTML=h;document.body.appendChild(el);
+}
+
+// ═══ FIȘA DOSARULUI ══════════════════════════════════════
+function viewFisa(dosarId){
+  const d=[...dosare,...dosareLucru,...dosareTerminate].find(x=>x.id===dosarId);if(!d)return;
+  if(!d.sarcini)d.sarcini=[];
+  const now=new Date();const dt=termene.filter(t=>t.dosarId===dosarId);
+  const dv=dt.filter(t=>new Date(t.dataOra)>now).sort((a,b)=>new Date(a.dataOra)-new Date(b.dataOra));
+  const dp=dt.filter(t=>new Date(t.dataOra)<=now).sort((a,b)=>new Date(b.dataOra)-new Date(a.dataOra));
+  document.getElementById('fisaContent').innerHTML=`
+    <div><h3 style="color:#2d3748;font-size:22px;margin-bottom:12px">📁 ${d.numar}</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div><strong>🏛️ Instanță:</strong> ${d.instanta}</div><div><span class="badge badge-${d.tip}">${d.tip}</span></div>
+      ${d.client?`<div><strong>👤 Client:</strong> ${d.client}</div>`:''}
+      <div><strong>📊 Stadiu:</strong> ${d.stadiuProcesual||'Fond'}</div>
+    </div>
+    ${d.obiect?`<div style="margin-bottom:10px"><strong>📝 Obiect:</strong> ${d.obiect}</div>`:''}
+    ${d.notiteDosar?`<div style="padding:13px;background:#f8f9fa;border-radius:8px;border-left:4px solid #6c757d;margin-bottom:10px"><strong>📋 Notițe:</strong><br>${d.notiteDosar}</div>`:''}</div>
+    <hr style="border:none;border-top:2px solid #e9ecef;margin:18px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h4 style="color:#1976D2;margin:0">📅 Termene viitoare (${dv.length})</h4>
+      <button class="btn btn-primary btn-sm" onclick="addTermenQuick(${dosarId});document.getElementById('fisaModal').style.display='none'">+ Termen</button>
+    </div>
+    ${dv.length?dv.map(t=>`<div style="padding:11px;background:#E3F2FD;margin:7px 0;border-radius:6px;border-left:4px solid #2196F3"><div style="font-weight:600;color:#1976D2">${fmtDT(t.dataOra)}</div><div style="font-size:13px;color:#1976D2">${t.tip}${t.sursa==='portal.just.ro'?' <em>(portal)</em>':''}</div></div>`).join(''):'<p style="color:#6c757d;font-style:italic">Nu are termene viitoare</p>'}
+    <h4 style="color:#6c757d;margin:16px 0 10px">📜 Termene trecute (${dp.length})</h4>
+    ${dp.slice(0,8).map(t=>`<div style="padding:9px;background:#f8f9fa;margin:5px 0;border-radius:6px;font-size:13px"><div style="font-weight:600;color:#495057">${fmtDT(t.dataOra)}</div><div style="color:#6c757d">${t.tip}</div></div>`).join('')}
+    ${dp.length>8?`<p style="font-size:12px;color:#6c757d">... și încă ${dp.length-8}</p>`:''}
+    <hr style="border:none;border-top:2px solid #e9ecef;margin:18px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h4 style="color:#2d3748;margin:0">✅ Sarcini (${d.sarcini.filter(s=>!s.finalizata).length} active)</h4>
+      <button class="btn btn-primary btn-sm" onclick="addSarcina(${dosarId})">+ Sarcină</button>
+    </div>
+    ${d.sarcini.length?d.sarcini.sort((a,b)=>a.finalizata-b.finalizata).map((s,i)=>`<div style="padding:11px;background:${s.finalizata?'#d4edda':'#fff3cd'};margin:7px 0;border-radius:6px;border-left:4px solid ${s.finalizata?'#28a745':'#ffc107'};position:relative"><button onclick="delSarcina(${dosarId},${i})" style="position:absolute;top:8px;right:8px;background:#dc3545;color:white;border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:11px">🗑️</button><div style="display:flex;align-items:center;gap:9px"><input type="checkbox" ${s.finalizata?'checked':''} onchange="togSarcina(${dosarId},${i})" style="width:17px;height:17px;cursor:pointer"><div style="${s.finalizata?'text-decoration:line-through;color:#6c757d':'color:#2d3748'}">${s.descriere}</div></div>${s.termen?`<div style="font-size:11px;color:#6c757d;margin-top:4px;margin-left:26px">📅 ${fmtDate(s.termen)}</div>`:''}</div>`).join(''):'<p style="color:#6c757d;font-style:italic">Nu sunt sarcini</p>'}
+    ${d.linkEcris?`<div style="text-align:center;margin-top:18px"><a href="${d.linkEcris}" target="_blank" class="btn btn-primary" onclick="event.preventDefault();window.open('${d.linkEcris}','_blank')">🔗 Deschide în Portal</a></div>`:''}
+  `;
+  document.getElementById('fisaModal').style.display='block';
+}
+function addSarcina(id){document.getElementById('fisaModal').style.display='none';const d=[...dosare,...dosareLucru].find(x=>x.id===id);if(!d)return;const desc=prompt('Sarcină pentru '+d.numar+'\n\nDescriere:');if(!desc)return;const ter=prompt('Termen (YYYY-MM-DD - opțional)')||'';if(!d.sarcini)d.sarcini=[];d.sarcini.push({descriere:desc,termen:ter,finalizata:false});saveData();setTimeout(()=>viewFisa(id),300);}
+function delSarcina(id,i){if(!confirm('Ștergi?'))return;const d=[...dosare,...dosareLucru].find(x=>x.id===id);if(!d)return;d.sarcini.splice(i,1);saveData();viewFisa(id);}
+function togSarcina(id,i){const d=[...dosare,...dosareLucru].find(x=>x.id===id);if(!d)return;d.sarcini[i].finalizata=!d.sarcini[i].finalizata;saveData();viewFisa(id);}
+
+// ═══ TO-DO ════════════════════════════════════════════════
+function saveTodo(e){
+  e.preventDefault();
+  const td={titlu:document.getElementById('tTitlu').value,descriere:document.getElementById('tDesc').value,prioritate:document.getElementById('tPrio').value,dataLimita:document.getElementById('tData').value||null,dosarId:parseInt(document.getElementById('tDosar').value)||null};
+  if(editingTodoId){const i=todos.findIndex(x=>x.id===editingTodoId);if(i!==-1){todos[i]={...todos[i],...td};showAlert('✅ Task actualizat!','success');}}
+  else{todos.push({id:Date.now(),...td,completed:false,dataCreare:new Date().toISOString()});showAlert('✅ Task adăugat!','success');}
+  saveData();hideForm('todoForm');editingTodoId=null;renderTodos();updateDashboard();
+}
+function editTodo(id){const t=todos.find(x=>x.id===id);if(!t)return;editingTodoId=id;updTodoDosar();document.getElementById('tTitlu').value=t.titlu;document.getElementById('tDesc').value=t.descriere||'';document.getElementById('tPrio').value=t.prioritate;document.getElementById('tData').value=t.dataLimita||'';document.getElementById('tDosar').value=t.dosarId||'';document.getElementById('todoFormTitle').textContent='✏️ Editează task';showForm('todoForm');}
+function updTodoDosar(){const s=document.getElementById('tDosar');const all=[...dosare,...dosareLucru];s.innerHTML='<option value="">Fără dosar asociat</option>'+all.map(d=>`<option value="${d.id}">${d.numar}</option>`).join('');}
+function togTodo(id){const t=todos.find(x=>x.id===id);if(t){t.completed=!t.completed;saveData();renderTodos();}}
+function delTodo(id){if(!confirm('Ștergi?'))return;todos=todos.filter(t=>t.id!==id);saveData();renderTodos();showAlert('Task șters!','danger');}
+function filtroPrio(p){document.querySelectorAll('.todo-item').forEach(t=>{t.style.display=p==='all'||t.dataset.prio===p?'block':'none';});}
+function renderTodos(){
+  const c=document.getElementById('todoList');if(!todos.length){c.innerHTML='<div class="empty-state"><h3>Nu ai task-uri</h3></div>';return;}
+  const now=new Date();const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const pl={'foarte-urgent':'Foarte urgent','urgent':'Urgent','urmarit':'De urmărit','concediu':'🏖️ Concediu'};
+  const sorted=[...todos].sort((a,b)=>{if(a.completed!==b.completed)return a.completed?1:-1;const po={'foarte-urgent':0,'urgent':1,'urmarit':2,'concediu':3};return po[a.prioritate]-po[b.prioritate];});
+  c.innerHTML=sorted.map(t=>{
+    const allD=[...dosare,...dosareLucru,...dosareTerminate];const d=allD.find(x=>x.id===t.dosarId);
+    let exp=false,dz=null;
+    if(!t.completed&&t.dataLimita){const td=new Date(t.dataLimita);const ts=new Date(td.getFullYear(),td.getMonth(),td.getDate());dz=Math.round((ts-today)/864e5);exp=dz<-7&&t.prioritate!=='concediu';}
+    return`<div class="todo-item ${t.completed?'completed':''}" data-prio="${t.prioritate}" style="${exp?'border-color:#6c757d;opacity:0.7':''}">
+      <div style="display:flex;align-items:start;gap:10px">
+        <input type="checkbox" style="width:19px;height:19px;margin-top:2px;cursor:pointer" ${t.completed?'checked':''} onchange="togTodo(${t.id})">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap">
+            <strong style="font-size:14px;color:#2d3748">${t.titlu}</strong>
+            <span class="pbadge-${t.prioritate}">${pl[t.prioritate]}</span>
+            ${exp?'<span style="background:#6c757d;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700">EXPIRAT</span>':''}
+          </div>
+          ${t.descriere?`<div style="font-size:12px;color:#5a6c7d;margin-bottom:5px">${t.descriere}</div>`:''}
+          ${t.dataLimita?`<div style="font-size:11px;color:${exp?'#dc3545':'#5a6c7d'};margin-bottom:4px">📅 ${fmtDate(t.dataLimita)}${exp&&dz!==null?` (${Math.abs(dz)}z întârziere)`:''}</div>`:''}
+          ${d?`<div style="font-size:11px;color:#5a6c7d">📁 ${d.numar}</div>`:''}
+          <div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn btn-sm" style="background:#6c757d;color:white" onclick="editTodo(${t.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="delTodo(${t.id})">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ CLIENȚI ════════════════════════════════════════════
+function saveClient(e){
+  e.preventDefault();
+  const cd={nume:document.getElementById('cNume').value,cnp:document.getElementById('cCNP').value,contact:document.getElementById('cContact').value,adresa:document.getElementById('cAdresa').value,onorariuPlatit:parseFloat(document.getElementById('cPlatit').value)||0,onorariuRestant:parseFloat(document.getElementById('cRestant').value)||0};
+  if(editingClientId){const i=clienti.findIndex(x=>x.id===editingClientId);if(i!==-1){clienti[i]={...clienti[i],...cd};showAlert('✅ Client actualizat!','success');}}
+  else{clienti.push({id:Date.now(),...cd,dataAdaugare:new Date().toISOString()});showAlert('✅ Client adăugat!','success');}
+  saveData();hideForm('clientForm');editingClientId=null;renderClienti();
+}
+function editClient(id){const c=clienti.find(x=>x.id===id);if(!c)return;editingClientId=id;document.getElementById('cNume').value=c.nume;document.getElementById('cCNP').value=c.cnp||'';document.getElementById('cContact').value=c.contact||'';document.getElementById('cAdresa').value=c.adresa||'';document.getElementById('cPlatit').value=c.onorariuPlatit||0;document.getElementById('cRestant').value=c.onorariuRestant||0;document.getElementById('clientFormTitle').textContent='Editează client';showForm('clientForm');}
+function delClient(id){const cn=clienti.find(c=>c.id===id)?.nume;const tot=[...dosare,...dosareUP,...dosareLucru,...dosareTerminate].filter(d=>(d.client||d.numar)===cn||d.client===cn).length;if(tot&&!confirm('⚠️ Clientul are dosare asociate. Ștergi?'))return;if(confirm('Ștergi definitiv?')){clienti=clienti.filter(x=>x.id!==id);saveData();renderClienti();showAlert('Client șters!','danger');}}
+function renderClienti(){
+  const c=document.getElementById('clientiList');if(!clienti.length){c.innerHTML='<div class="empty-state"><h3>Nu ai clienți</h3></div>';return;}
+  const sorted=[...clienti].sort((a,b)=>(a.nume||'').localeCompare(b.nume||'','ro'));
+  c.innerHTML=sorted.map(cl=>{
+    const n=(cl.nume||'').trim().toLowerCase();
+    const tot=[...dosare,...dosareUP,...dosareLucru,...dosareTerminate].filter(d=>(d.client||'').trim().toLowerCase()===n).length;
+    return`<div class="dosar-card cli-card" style="border-left:4px solid #28a745">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+        <div><div class="dosar-numar">${cl.nume}</div>${cl.cnp?`<div style="font-size:12px;color:#6c757d">CNP: ${cl.cnp}</div>`:''}</div>
+        <div style="display:flex;gap:5px"><button class="btn btn-primary btn-sm" onclick="editClient(${cl.id})">✏️</button><button class="btn btn-danger btn-sm" onclick="delClient(${cl.id})">🗑️</button></div>
+      </div>
+      ${cl.contact?`<div class="dosar-info"><strong>📞</strong> ${cl.contact}</div>`:''}
+      ${cl.adresa?`<div class="dosar-info"><strong>📍</strong> ${cl.adresa}</div>`:''}
+      <div class="dosar-info"><strong>📁 Dosare:</strong> ${tot}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+        <div style="padding:9px;border-radius:8px;text-align:center;background:#d4edda;color:#155724"><div style="font-size:11px;margin-bottom:3px">Plătit</div><div style="font-weight:700;font-size:15px">${fmtMoney(cl.onorariuPlatit)}</div></div>
+        <div style="padding:9px;border-radius:8px;text-align:center;background:#f8d7da;color:#721c24"><div style="font-size:11px;margin-bottom:3px">Restant</div><div style="font-weight:700;font-size:15px">${fmtMoney(cl.onorariuRestant)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ URMĂRIRE PENALĂ ════════════════════════════════════
+function saveUP(e){
+  e.preventDefault();
+  const ud={numar:document.getElementById('uNr').value,client:document.getElementById('uClient').value,tipClient:document.getElementById('uTipClient').value,obiect:document.getElementById('uObiect').value,parchet:document.getElementById('uParchet').value,procuror:document.getElementById('uProcuror').value,politist:document.getElementById('uPolitist').value,contactAncheta:document.getElementById('uContact').value,dataAudiere:document.getElementById('uAudiere').value,notite:document.getElementById('uNotite').value};
+  if(editingUPId){const i=dosareUP.findIndex(x=>x.id===editingUPId);if(i!==-1){dosareUP[i]={...dosareUP[i],...ud};showAlert('✅ Dosar UP actualizat!','success');}}
+  else{dosareUP.push({id:Date.now(),...ud,dataAdaugare:new Date().toISOString()});showAlert('✅ Dosar UP adăugat!','success');}
+  saveData();hideForm('upForm');editingUPId=null;renderUP();renderClienti();if(ud.dataAudiere)renderCalendar();
+}
+function editUP(id){const d=dosareUP.find(x=>x.id===id);if(!d)return;editingUPId=id;document.getElementById('uNr').value=d.numar;document.getElementById('uClient').value=d.client||'';document.getElementById('uTipClient').value=d.tipClient||'';document.getElementById('uObiect').value=d.obiect||'';document.getElementById('uParchet').value=d.parchet||'';document.getElementById('uProcuror').value=d.procuror||'';document.getElementById('uPolitist').value=d.politist||'';document.getElementById('uContact').value=d.contactAncheta||'';document.getElementById('uAudiere').value=d.dataAudiere||'';document.getElementById('uNotite').value=d.notite||'';document.getElementById('upFormTitle').textContent='Editează dosar UP';showForm('upForm');}
+function delUP(id){if(!confirm('Ștergi definitiv?'))return;dosareUP=dosareUP.filter(x=>x.id!==id);saveData();renderUP();renderClienti();showAlert('Dosar UP șters!','danger');}
+function upInLucru(id){if(!confirm('Muți UP în lucru?'))return;const i=dosareUP.findIndex(x=>x.id===id);if(i!==-1){const u=dosareUP[i];dosareLucru.push({id:u.id,numar:u.numar,client:u.client,instanta:u.parchet,tip:'penal',obiect:u.obiect,linkEcris:'',isUP:true,tipClient:u.tipClient,procuror:u.procuror,politist:u.politist,contactAncheta:u.contactAncheta,dataAudiere:u.dataAudiere,notiteDosar:u.notite,stadiuProcesual:'Urmărire Penală',caleAtac:'Niciuna',sedinte:[],sarcini:[],dataAdaugare:u.dataAdaugare||new Date().toISOString()});dosareUP.splice(i,1);saveData();renderUP();renderLucru();showAlert('UP mutat în lucru!','success');}}
+function upTerminat(id){if(!confirm('Muți UP la terminate?'))return;const i=dosareUP.findIndex(x=>x.id===id);if(i!==-1){const u=dosareUP[i];dosareTerminate.push({id:u.id,numar:u.numar,client:u.client,instanta:u.parchet,tip:'penal',isUP:true,notiteDosar:u.notite,dataTerminare:new Date().toISOString()});dosareUP.splice(i,1);saveData();renderUP();renderTerminate();showAlert('UP terminat!','success');}}
+function renderUP(){
+  const c=document.getElementById('upList');if(!dosareUP.length){c.innerHTML='<div class="empty-state"><h3>Nu ai dosare UP</h3></div>';return;}
+  c.innerHTML=dosareUP.map(d=>`<div class="dosar-card" style="border-left:4px solid #6a1b9a">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+      <div><div class="dosar-numar">${d.numar}</div><span class="badge" style="background:#f3e5f5;color:#6a1b9a">UP</span></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="editUP(${d.id})">✏️</button>
+        <button class="btn btn-sm" onclick="upInLucru(${d.id})" style="background:#ffc107;color:#000">⚙️</button>
+        <button class="btn btn-success btn-sm" onclick="upTerminat(${d.id})">✅</button>
+        <button class="btn btn-danger btn-sm" onclick="delUP(${d.id})">🗑️</button>
+      </div>
+    </div>
+    <div class="dosar-info"><strong>👤 Client:</strong> ${d.client}</div>
+    <div class="dosar-info"><strong>Tip:</strong> <span style="color:${d.tipClient==='Suspect'||d.tipClient==='Inculpat'?'#dc3545':'#28a745'};font-weight:600">${d.tipClient}</span></div>
+    ${d.obiect?`<div class="dosar-info"><strong>⚖️ Obiect:</strong> ${d.obiect}</div>`:''}
+    <div class="dosar-info"><strong>🏛️ Parchet:</strong> ${d.parchet}</div>
+    ${d.procuror?`<div class="dosar-info"><strong>Procuror:</strong> ${d.procuror}</div>`:''}
+    ${d.politist?`<div class="dosar-info"><strong>Polițist:</strong> ${d.politist}</div>`:''}
+    ${d.dataAudiere?`<div style="margin-top:9px;padding:9px;background:#fff3cd;border-radius:6px;border-left:3px solid #ffc107"><strong style="color:#856404">📅 Audiere:</strong> ${fmtDate(d.dataAudiere)}</div>`:''}
+    ${d.notite?`<div style="margin-top:9px;padding:9px;background:#f8f9fa;border-radius:6px;font-size:13px"><strong>📝</strong> ${d.notite}</div>`:''}
+  </div>`).join('');
+}
+
+// ═══ CĂUTARE GLOBALĂ ════════════════════════════════════
+function normStr(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s\/\-]/g,'');}
+function globalSearch(q){
+  const box=document.getElementById('searchResults');if(!q.trim()){box.style.display='none';return;}
+  const nq=normStr(q);const res=[];
+  clienti.forEach(c=>{if(normStr(c.nume).includes(nq)||normStr(c.cnp).includes(nq))res.push({tip:'Client',icon:'👤',titlu:c.nume,sub:c.contact||'',tab:'clienti',id:c.id});});
+  dosare.forEach(d=>{if(normStr(d.numar).includes(nq)||normStr(d.client).includes(nq)||normStr(d.instanta).includes(nq))res.push({tip:'Dosar',icon:'📁',titlu:d.numar,sub:d.instanta+' • '+(d.client||''),tab:'dosare',id:d.id});});
+  dosareUP.forEach(d=>{if(normStr(d.numar).includes(nq)||normStr(d.client).includes(nq))res.push({tip:'UP',icon:'🔍',titlu:d.numar,sub:d.parchet+' • '+(d.client||''),tab:'up',id:d.id});});
+  dosareLucru.forEach(d=>{if(normStr(d.numar).includes(nq)||normStr(d.client).includes(nq))res.push({tip:'În lucru',icon:'⚙️',titlu:d.numar,sub:d.instanta,tab:'dosareLucru',id:d.id});});
+  dosareTerminate.forEach(d=>{if(normStr(d.numar).includes(nq)||normStr(d.client).includes(nq))res.push({tip:'Terminat',icon:'✅',titlu:d.numar,sub:d.instanta,tab:'dosareTerminate',id:d.id});});
+  if(!res.length){box.innerHTML='<div style="padding:14px;text-align:center;color:#9ca3af;font-size:13px">🔍 Niciun rezultat</div>';box.style.display='block';return;}
+  const g={};res.slice(0,15).forEach(r=>{if(!g[r.tip])g[r.tip]=[];g[r.tip].push(r);});
+  box.innerHTML=Object.entries(g).map(([tip,items])=>`<div style="padding:5px 12px;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;background:#fafafa;border-bottom:1px solid #f0f0f0">${tip}</div>${items.map(r=>`<div onclick="goRes('${r.tab}',${r.id})" style="padding:10px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='white'"><div style="width:32px;height:32px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;font-size:16px">${r.icon}</div><div><div style="font-weight:600;font-size:13px;color:#1a202c">${r.titlu}</div><div style="font-size:11px;color:#718096">${r.sub}</div></div></div>`).join('')}`).join('');
+  box.style.display='block';
+}
+function goRes(tab,id){document.getElementById('gSearch').value='';document.getElementById('searchResults').style.display='none';const tabs={'clienti':1,'dosare':2,'up':3,'dosareLucru':4,'dosareTerminate':5,'todo':6,'termene':7,'calendar':8};const idx=tabs[tab]||2;goTab(tab,document.querySelectorAll('.tab')[idx<9?idx:2]);}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('searchResults').style.display='none';});
+
+// ═══ SERVICE WORKER ══════════════════════════════════════
+if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(()=>console.log('SW ok')).catch(e=>console.warn('SW:',e));});}
+
+// ═══ INIȚIALIZARE ════════════════════════════════════════
+function init(){
+  if(appOK)return;appOK=true;
+  loadData();checkAutoBackup();
+  renderAll();
+  updTodoDosar();
+  // Sincronizare automată portal – rulează în fundal la 2s după pornire
+  setTimeout(()=>autoSync(),2000);
+}
+window.onload=init;
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
