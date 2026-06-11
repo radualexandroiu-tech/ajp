@@ -1,7 +1,7 @@
 // Agenda Juridica - Service Worker v4
 // Schimbarea numelui cache-ului forteaza stergerea versiunii vechi
 
-const CACHE = 'agenda-juridica-v4';
+const CACHE = 'agenda-juridica-v5';
 const FILES = [
   './index.html',
   './manifest.json',
